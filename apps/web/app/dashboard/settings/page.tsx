@@ -3,6 +3,16 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import type { Agent } from "@/lib/agents";
 import type { SystemInfo } from "@/lib/system-info";
@@ -54,6 +64,7 @@ export default function SettingsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [resetting, setResetting] = useState<string | null>(null);
+  const [pendingReset, setPendingReset] = useState<Agent | null>(null);
 
   const loadCounts = useCallback(async (agentList: Agent[]) => {
     const entries = await Promise.all(
@@ -85,6 +96,7 @@ export default function SettingsPage() {
       setCounts((prev) => ({ ...prev, [slug]: 0 }));
     } finally {
       setResetting(null);
+      setPendingReset(null);
     }
   }, []);
 
@@ -110,7 +122,10 @@ export default function SettingsPage() {
               label=".claude/agents"
               value={system?.agentsDir ?? "…"}
             />
-            <InfoRow label="Mémoire AIS" value={system?.memoireDir ?? "…"} />
+            <InfoRow
+              label="Dossier TP AIS (ais-memory/)"
+              value={system?.memoireDir ?? "…"}
+            />
           </SettingsSection>
 
           <SettingsSection
@@ -137,7 +152,7 @@ export default function SettingsPage() {
                   disabled={
                     resetting === agent.slug || (counts[agent.slug] ?? 0) === 0
                   }
-                  onClick={() => handleReset(agent.slug)}
+                  onClick={() => setPendingReset(agent)}
                   className={cn(
                     "border-border font-mono text-[11px]",
                     resetting === agent.slug && "opacity-60"
@@ -152,6 +167,34 @@ export default function SettingsPage() {
           </SettingsSection>
         </div>
       </div>
+
+      <AlertDialog
+        open={pendingReset !== null}
+        onOpenChange={(open) => !open && setPendingReset(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Réinitialiser cette conversation ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              L&apos;historique de chat avec {pendingReset?.name} (
+              {counts[pendingReset?.slug ?? ""] ?? 0} message
+              {(counts[pendingReset?.slug ?? ""] ?? 0) > 1 ? "s" : ""}) sera
+              définitivement supprimé. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (pendingReset) handleReset(pendingReset.slug);
+              }}
+            >
+              Réinitialiser
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

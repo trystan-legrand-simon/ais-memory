@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import { Play } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -201,7 +202,14 @@ function AgentEditorForm({
           onClick={() => onRun(agent.slug)}
           className="border-border font-mono text-[12px]"
         >
-          {running ? "En cours…" : "▸ Lancer"}
+          {running ? (
+            "En cours…"
+          ) : (
+            <>
+              <Play className="size-3.5" strokeWidth={1.75} />
+              Lancer
+            </>
+          )}
         </Button>
         <Button
           disabled={saving}

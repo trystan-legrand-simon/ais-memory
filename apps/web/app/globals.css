@@ -170,6 +170,8 @@
     transform: translateY(0) scale(1);
   }
 }
-.node-enter {
-  animation: node-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+@media (prefers-reduced-motion: no-preference) {
+  .node-enter {
+    animation: node-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }

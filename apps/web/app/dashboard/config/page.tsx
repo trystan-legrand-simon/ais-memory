@@ -118,6 +118,7 @@ function RuleList({
             <Button
               variant="ghost"
               size="icon-xs"
+              aria-label={`Retirer la règle ${rule}`}
               className="shrink-0 text-muted-foreground hover:text-destructive"
               onClick={() =>
                 confirmRemove ? setPendingRemove(rule) : onRemove(rule)

@@ -6,6 +6,16 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { API_BASE } from "@/lib/api-client";
 import { useLiveEvents } from "@/lib/use-live-events";
@@ -40,6 +50,7 @@ export default function RoutinesPage() {
   const [dayOfWeek, setDayOfWeek] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<Routine | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -98,6 +109,8 @@ export default function RoutinesPage() {
     if (res.ok) {
       const updated = (await res.json()) as Routine;
       setRoutines((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    } else {
+      setError("Impossible de modifier la routine — réessayez.");
     }
   }, []);
 
@@ -105,7 +118,10 @@ export default function RoutinesPage() {
     const res = await fetch(`${API_BASE}/routines/${id}`, { method: "DELETE" });
     if (res.ok) {
       setRoutines((prev) => prev.filter((r) => r.id !== id));
+    } else {
+      setError("Impossible de supprimer la routine — réessayez.");
     }
+    setPendingDelete(null);
   }, []);
 
   const agentName = useCallback(
@@ -260,7 +276,7 @@ export default function RoutinesPage() {
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDelete(routine.id)}
+                          onClick={() => setPendingDelete(routine)}
                         >
                           Supprimer
                         </Button>
@@ -273,6 +289,33 @@ export default function RoutinesPage() {
           </section>
         </div>
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette routine ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              La routine {pendingDelete && agentName(pendingDelete.slug)} (
+              {pendingDelete && describeRoutine(pendingDelete)}) sera
+              définitivement supprimée. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (pendingDelete) handleDelete(pendingDelete.id);
+              }}
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

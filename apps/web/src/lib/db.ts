@@ -58,4 +58,27 @@ db.exec(`
     created_at TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS idx_routines_enabled ON routines(enabled);
+
+  CREATE TABLE IF NOT EXISTS missions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_slug TEXT NOT NULL,
+    discord_channel_id TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS mission_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mission_id INTEGER NOT NULL REFERENCES missions(id),
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_mission_messages_mission_id ON mission_messages(mission_id);
+
+  CREATE TABLE IF NOT EXISTS mission_sessions (
+    mission_id INTEGER PRIMARY KEY REFERENCES missions(id),
+    claude_session_id TEXT,
+    updated_at TEXT NOT NULL
+  );
 `);

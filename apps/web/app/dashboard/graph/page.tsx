@@ -23,6 +23,7 @@ import type { Graph } from "@/lib/graph-store";
 import { PageHeader } from "@/components/page-header";
 import { API_BASE } from "@/lib/api-client";
 import { useLiveEvents } from "@/lib/use-live-events";
+import { toast } from "@/components/ui/toast";
 
 const nodeTypes = { agent: AgentNode };
 
@@ -241,38 +242,71 @@ function GraphPageContent() {
       slug: string,
       update: { description: string; tools: string[]; prompt: string }
     ) => {
-      const res = await fetch(`${API_BASE}/agents/${slug}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(update),
-      });
-      const saved: Agent = await res.json();
-      setAgents((prev) => prev.map((a) => (a.slug === slug ? saved : a)));
+      try {
+        const res = await fetch(`${API_BASE}/agents/${slug}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(update),
+        });
+        const saved: Agent = await res.json();
+        if (!res.ok) {
+          throw new Error(
+            (saved as unknown as { error?: string }).error ?? "Erreur inconnue"
+          );
+        }
+        setAgents((prev) => prev.map((a) => (a.slug === slug ? saved : a)));
+        toast.add({
+          title: "Agent enregistré",
+          description: saved.name,
+          type: "success",
+        });
+      } catch (err) {
+        toast.add({
+          title: "Échec de l'enregistrement",
+          description: err instanceof Error ? err.message : "Erreur inconnue",
+          type: "error",
+        });
+      }
     },
     []
   );
 
-  const handleRun = useCallback(async (slug: string) => {
-    setRunStatus((prev) => ({ ...prev, [slug]: "running" }));
-    setRunOutput((prev) => ({ ...prev, [slug]: null }));
-    try {
-      const res = await fetch(`${API_BASE}/agents/${slug}/run`, { method: "POST" });
-      const result = await res.json();
-      if (!res.ok) {
+  const handleRun = useCallback(
+    async (slug: string) => {
+      const name = agents.find((a) => a.slug === slug)?.name ?? slug;
+      setRunStatus((prev) => ({ ...prev, [slug]: "running" }));
+      setRunOutput((prev) => ({ ...prev, [slug]: null }));
+      try {
+        const res = await fetch(`${API_BASE}/agents/${slug}/run`, {
+          method: "POST",
+        });
+        const result = await res.json();
+        if (!res.ok) {
+          setRunStatus((prev) => ({ ...prev, [slug]: "error" }));
+          setRunOutput((prev) => ({ ...prev, [slug]: result.error ?? "Erreur" }));
+          toast.add({
+            title: `${name} — échec`,
+            description: result.error ?? "Erreur inconnue",
+            type: "error",
+          });
+          return;
+        }
+        setRunStatus((prev) => ({ ...prev, [slug]: result.status }));
+        setRunOutput((prev) => ({ ...prev, [slug]: result.output }));
+        toast.add({
+          title:
+            result.status === "success" ? `${name} — succès` : `${name} — échec`,
+          type: result.status === "success" ? "success" : "error",
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Erreur inconnue";
         setRunStatus((prev) => ({ ...prev, [slug]: "error" }));
-        setRunOutput((prev) => ({ ...prev, [slug]: result.error ?? "Erreur" }));
-        return;
+        setRunOutput((prev) => ({ ...prev, [slug]: message }));
+        toast.add({ title: `${name} — échec`, description: message, type: "error" });
       }
-      setRunStatus((prev) => ({ ...prev, [slug]: result.status }));
-      setRunOutput((prev) => ({ ...prev, [slug]: result.output }));
-    } catch (err) {
-      setRunStatus((prev) => ({ ...prev, [slug]: "error" }));
-      setRunOutput((prev) => ({
-        ...prev,
-        [slug]: err instanceof Error ? err.message : "Erreur inconnue",
-      }));
-    }
-  }, []);
+    },
+    [agents]
+  );
 
   return (
     <>

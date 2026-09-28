@@ -47,7 +47,7 @@ export default async function OverviewPage() {
               <Link
                 key={agent.slug}
                 href={`/dashboard/graph?agent=${agent.slug}`}
-                className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-accent/60"
+                className="flex flex-col gap-1.5 px-4 py-3 transition-colors hover:bg-accent/60"
               >
                 <div className="min-w-0">
                   <div className="font-heading text-sm font-extrabold tracking-tight">
@@ -57,11 +57,12 @@ export default async function OverviewPage() {
                     {agent.description}
                   </p>
                 </div>
-                <div className="flex shrink-0 gap-1.5">
+                <div className="flex flex-wrap gap-1.5">
                   {agent.tools.map((tool) => (
                     <span
                       key={tool}
-                      className="rounded-full border border-border px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
+                      title={tool}
+                      className="max-w-full truncate rounded-full border border-border px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
                     >
                       {tool}
                     </span>

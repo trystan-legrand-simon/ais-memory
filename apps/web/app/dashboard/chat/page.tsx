@@ -8,6 +8,8 @@ import {
   useState,
 } from "react";
 import { useSearchParams } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -233,6 +235,78 @@ function ChatPageContent() {
   );
 }
 
+// react-markdown renders each node as a real React element (no
+// dangerouslySetInnerHTML), so agent output can't inject raw HTML — safe by
+// default even though this content comes from the local Claude CLI, not an
+// untrusted third party.
+const MARKDOWN_COMPONENTS: Components = {
+  p: ({ children }) => (
+    <p className="mb-2.5 leading-relaxed last:mb-0">{children}</p>
+  ),
+  strong: ({ children }) => (
+    <strong className="font-bold text-foreground">{children}</strong>
+  ),
+  em: ({ children }) => <em className="italic">{children}</em>,
+  h1: ({ children }) => (
+    <h1 className="mt-4 mb-2 font-heading text-base font-extrabold tracking-tight first:mt-0">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="mt-4 mb-1.5 font-heading text-[14px] font-extrabold tracking-tight first:mt-0">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="mt-3 mb-1.5 font-heading text-[13px] font-extrabold tracking-tight first:mt-0">
+      {children}
+    </h3>
+  ),
+  ul: ({ children }) => (
+    <ul className="mb-2.5 list-disc space-y-1 pl-5 marker:text-muted-foreground last:mb-0">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="mb-2.5 list-decimal space-y-1 pl-5 marker:text-muted-foreground last:mb-0">
+      {children}
+    </ol>
+  ),
+  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  a: ({ children, href }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-brand underline underline-offset-2 hover:opacity-80"
+    >
+      {children}
+    </a>
+  ),
+  hr: () => <hr className="my-3 border-border" />,
+  blockquote: ({ children }) => (
+    <blockquote className="my-2.5 border-l-2 border-border pl-3 text-muted-foreground">
+      {children}
+    </blockquote>
+  ),
+  code: ({ className, children }) => {
+    const isBlock = /language-/.test(className ?? "");
+    if (isBlock) {
+      return <code className={className}>{children}</code>;
+    }
+    return (
+      <code className="rounded border border-border bg-black/40 px-1 py-0.5 font-mono text-[12px]">
+        {children}
+      </code>
+    );
+  },
+  pre: ({ children }) => (
+    <pre className="my-2.5 overflow-x-auto rounded-md border border-border bg-black p-2.5 font-mono text-[12px] leading-relaxed">
+      {children}
+    </pre>
+  ),
+};
+
 function ChatBubble({ message }: { message: ChatMessage }) {
   if (message.role === "user") {
     return (
@@ -245,13 +319,15 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   return (
     <div
       className={cn(
-        "max-w-[75%] self-start rounded-lg border px-3.5 py-2.5 font-mono text-[13px] leading-relaxed whitespace-pre-wrap",
+        "max-w-[75%] self-start rounded-lg border px-3.5 py-2.5 font-mono text-[13px]",
         message.role === "error"
           ? "border-destructive/30 bg-destructive/10 text-destructive"
           : "border-border bg-card text-foreground"
       )}
     >
-      {message.content}
+      <ReactMarkdown components={MARKDOWN_COMPONENTS}>
+        {message.content}
+      </ReactMarkdown>
     </div>
   );
 }

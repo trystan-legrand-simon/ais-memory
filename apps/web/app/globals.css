@@ -3,10 +3,17 @@
 @import "shadcn/tailwind.css";
 @import "reactflow/dist/style.css";
 
+/* This is a single dark theme by design (see note below) — force every
+   `dark:` utility shadcn's components ship with to always match, instead of
+   Tailwind v4's default `prefers-color-scheme` media query, which silently
+   no-ops (falling back to each component's light-mode styles, e.g. Input's
+   white background) whenever the OS/browser isn't itself set to dark. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-syne);
+  --font-sans: var(--font-geist);
   --font-mono: var(--font-jetbrains-mono);
   --font-heading: var(--font-sans);
   --color-success: var(--success);

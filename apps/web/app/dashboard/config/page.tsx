@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { API_BASE } from "@/lib/api-client";
+import { toast } from "@/components/ui/toast";
 
 type Settings = Record<string, unknown>;
 
@@ -270,7 +271,7 @@ export default function ConfigPage() {
   }, [load]);
 
   const applyPermissionsChange = useCallback(
-    async (next: { allow?: string[]; deny?: string[] }) => {
+    async (next: { allow?: string[]; deny?: string[] }, label: string) => {
       if (!settings) return;
       const permissions =
         (settings.permissions as Record<string, unknown> | undefined) ?? {};
@@ -278,8 +279,17 @@ export default function ConfigPage() {
         ...settings,
         permissions: { ...permissions, ...next },
       };
-      const saved = await putSettings(updated);
-      setSettings(saved);
+      try {
+        const saved = await putSettings(updated);
+        setSettings(saved);
+        toast.add({ title: label, type: "success" });
+      } catch (err) {
+        toast.add({
+          title: "Échec de l'enregistrement",
+          description: err instanceof Error ? err.message : "Erreur inconnue",
+          type: "error",
+        });
+      }
     },
     [settings]
   );
@@ -306,6 +316,7 @@ export default function ConfigPage() {
       }
       const saved = await putSettings(updated);
       setSettings(saved);
+      toast.add({ title: "Réglages enregistrés", type: "success" });
     } catch (err) {
       setScalarError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
@@ -319,6 +330,7 @@ export default function ConfigPage() {
       const updated: Settings = { ...settings, [key]: parsed };
       const saved = await putSettings(updated);
       setSettings(saved);
+      toast.add({ title: `${key} enregistré`, type: "success" });
     },
     [settings]
   );
@@ -387,18 +399,34 @@ export default function ConfigPage() {
             <RuleList
               label="Allow"
               rules={allow}
-              onAdd={(rule) => applyPermissionsChange({ allow: [...allow, rule] })}
+              onAdd={(rule) =>
+                applyPermissionsChange(
+                  { allow: [...allow, rule] },
+                  `Règle allow ajoutée : ${rule}`
+                )
+              }
               onRemove={(rule) =>
-                applyPermissionsChange({ allow: allow.filter((r) => r !== rule) })
+                applyPermissionsChange(
+                  { allow: allow.filter((r) => r !== rule) },
+                  `Règle allow retirée : ${rule}`
+                )
               }
             />
             <RuleList
               label="Deny"
               rules={deny}
               confirmRemove
-              onAdd={(rule) => applyPermissionsChange({ deny: [...deny, rule] })}
+              onAdd={(rule) =>
+                applyPermissionsChange(
+                  { deny: [...deny, rule] },
+                  `Règle deny ajoutée : ${rule}`
+                )
+              }
               onRemove={(rule) =>
-                applyPermissionsChange({ deny: deny.filter((r) => r !== rule) })
+                applyPermissionsChange(
+                  { deny: deny.filter((r) => r !== rule) },
+                  `Règle deny retirée : ${rule}`
+                )
               }
             />
           </ConfigSection>

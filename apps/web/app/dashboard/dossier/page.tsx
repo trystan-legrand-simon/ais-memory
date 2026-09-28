@@ -10,6 +10,7 @@ import { FileTree } from "@/components/dossier/file-tree";
 import { FileEditor } from "@/components/dossier/file-editor";
 import { PageHeader } from "@/components/page-header";
 import { API_BASE } from "@/lib/api-client";
+import { toast } from "@/components/ui/toast";
 
 export default function DossierPage() {
   const [paths, setPaths] = useState<string[]>([]);
@@ -39,12 +40,27 @@ export default function DossierPage() {
     if (!selectedPath) return;
     setSaving(true);
     try {
-      await fetch(`${API_BASE}/files/${encodePath(selectedPath)}`, {
+      const res = await fetch(`${API_BASE}/files/${encodePath(selectedPath)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? "Échec de l'enregistrement");
+      }
       setSavedContent(content);
+      toast.add({
+        title: "Fichier enregistré",
+        description: selectedPath,
+        type: "success",
+      });
+    } catch (err) {
+      toast.add({
+        title: "Échec de l'enregistrement",
+        description: err instanceof Error ? err.message : "Erreur inconnue",
+        type: "error",
+      });
     } finally {
       setSaving(false);
     }

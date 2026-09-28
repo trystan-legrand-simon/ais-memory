@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { PageHeader } from "@/components/page-header";
+import { SettingsNav } from "@/components/settings-nav";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,17 +94,33 @@ export default function SettingsPage() {
   const handleReset = useCallback(async (slug: string) => {
     setResetting(slug);
     try {
-      await fetch(`${API_BASE}/agents/${slug}/chat`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/agents/${slug}/chat`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Échec de la réinitialisation");
       setCounts((prev) => ({ ...prev, [slug]: 0 }));
+      const name = agents.find((a) => a.slug === slug)?.name ?? slug;
+      toast.add({
+        title: "Conversation réinitialisée",
+        description: name,
+        type: "success",
+      });
+    } catch (err) {
+      toast.add({
+        title: "Échec de la réinitialisation",
+        description: err instanceof Error ? err.message : "Erreur inconnue",
+        type: "error",
+      });
     } finally {
       setResetting(null);
       setPendingReset(null);
     }
-  }, []);
+  }, [agents]);
 
   return (
     <>
       <PageHeader title="Settings" description="Système & conversations" />
+      <SettingsNav />
       <div className="min-h-0 flex-1 overflow-y-auto p-5">
         <div className="flex max-w-2xl flex-col gap-8">
           <SettingsSection

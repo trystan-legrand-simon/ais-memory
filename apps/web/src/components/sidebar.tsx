@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Clock,
   Radar,
+  Bot,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ interface NavItem {
 
 const NAV = [
   { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, exact: true },
+  { href: "/dashboard/agents", label: "Agents", icon: Bot, exact: false },
   { href: "/dashboard/graph", label: "Nodes", icon: Waypoints, exact: false },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/sessions", label: "Sessions", icon: History, exact: false },

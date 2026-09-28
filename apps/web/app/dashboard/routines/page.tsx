@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "@/components/ui/toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -95,6 +96,11 @@ export default function RoutinesPage() {
         return;
       }
       setRoutines((prev) => [data as Routine, ...prev]);
+      toast.add({
+        title: "Routine créée",
+        description: describeRoutine(data as Routine),
+        type: "success",
+      });
     } finally {
       setCreating(false);
     }
@@ -109,8 +115,16 @@ export default function RoutinesPage() {
     if (res.ok) {
       const updated = (await res.json()) as Routine;
       setRoutines((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      toast.add({
+        title: updated.enabled ? "Routine activée" : "Routine désactivée",
+        type: "success",
+      });
     } else {
       setError("Impossible de modifier la routine — réessayez.");
+      toast.add({
+        title: "Impossible de modifier la routine",
+        type: "error",
+      });
     }
   }, []);
 
@@ -118,8 +132,10 @@ export default function RoutinesPage() {
     const res = await fetch(`${API_BASE}/routines/${id}`, { method: "DELETE" });
     if (res.ok) {
       setRoutines((prev) => prev.filter((r) => r.id !== id));
+      toast.add({ title: "Routine supprimée", type: "success" });
     } else {
       setError("Impossible de supprimer la routine — réessayez.");
+      toast.add({ title: "Impossible de supprimer la routine", type: "error" });
     }
     setPendingDelete(null);
   }, []);

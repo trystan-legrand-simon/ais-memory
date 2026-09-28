@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Syne, JetBrains_Mono } from "next/font/google";
+import { Geist, JetBrains_Mono } from "next/font/google";
+import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
-const syne = Syne({
-  variable: "--font-syne",
-  weight: "800",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
 });
 
@@ -22,9 +22,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${syne.variable} ${jetbrainsMono.variable} h-dvh antialiased`}
+      className={`${geist.variable} ${jetbrainsMono.variable} dark h-dvh antialiased`}
     >
-      <body className="flex h-dvh">{children}</body>
+      <body className="flex h-dvh">
+        <Toaster>{children}</Toaster>
+      </body>
     </html>
   );
 }

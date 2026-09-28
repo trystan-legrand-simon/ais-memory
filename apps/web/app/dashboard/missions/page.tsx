@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Radar } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 import { API_BASE } from "@/lib/api-client";
@@ -69,10 +70,21 @@ export default function MissionsPage() {
             Chargement…
           </p>
         ) : missions.length === 0 ? (
-          <p className="font-mono text-[13px] text-muted-foreground">
-            Aucune mission pour l&apos;instant. Créez-en une depuis Discord
-            avec <code>/mission create</code>.
-          </p>
+          <div className="flex max-w-md flex-col items-start gap-3 rounded-lg border border-dashed border-border p-6">
+            <Radar className="size-5 text-muted-foreground" strokeWidth={1.75} />
+            <div>
+              <div className="font-heading text-[13px] font-extrabold tracking-tight">
+                Aucune mission pour l&apos;instant
+              </div>
+              <p className="mt-1 font-mono text-[12px] leading-relaxed text-muted-foreground">
+                Créez-en une depuis Discord avec{" "}
+                <code className="rounded border border-border bg-black/40 px-1 py-0.5">
+                  /mission create
+                </code>
+                .
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="flex max-w-3xl flex-col gap-2">
             {missions.map((mission) => {

@@ -2,10 +2,7 @@
   "mcpServers": {
     "claude-code-docs": {
       "type": "http",
-      "url": [
-        "https://code.claude.com/docs/mcp",
-        
-      ]
+      "url": "https://code.claude.com/docs/mcp"
     },
     "playwright": {
       "type": "stdio",

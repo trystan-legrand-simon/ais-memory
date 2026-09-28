@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { API_BASE } from "@/lib/api-client";
+import { useLiveEvents } from "@/lib/use-live-events";
 import type { Agent } from "@/lib/agents";
 import type { Routine, RoutineFrequency } from "@/lib/routines";
 
@@ -51,6 +52,17 @@ export default function RoutinesPage() {
       setLoading(false);
     });
   }, []);
+
+  useLiveEvents((event) => {
+    if (event.type !== "routine") return;
+    setRoutines((prev) => {
+      const exists = prev.some((r) => r.id === event.data.id);
+      if (exists) {
+        return prev.map((r) => (r.id === event.data.id ? event.data : r));
+      }
+      return [event.data, ...prev];
+    });
+  });
 
   const handleCreate = useCallback(async () => {
     setError(null);

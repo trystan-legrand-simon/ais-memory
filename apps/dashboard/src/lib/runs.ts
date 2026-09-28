@@ -31,7 +31,7 @@ export function recordRun(run: {
   );
 }
 
-interface RunRow {
+export interface RunRow {
   id: number;
   slug: string;
   status: "success" | "error";
@@ -41,7 +41,7 @@ interface RunRow {
   finished_at: string;
 }
 
-function toRunRecord(row: RunRow): RunRecord {
+export function toRunRecord(row: RunRow): RunRecord {
   return {
     id: row.id,
     slug: row.slug,

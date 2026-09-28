@@ -22,6 +22,7 @@ import type { Agent } from "@/lib/agents";
 import type { Graph } from "@/lib/graph-store";
 import { PageHeader } from "@/components/page-header";
 import { API_BASE } from "@/lib/api-client";
+import { useLiveEvents } from "@/lib/use-live-events";
 
 const nodeTypes = { agent: AgentNode };
 
@@ -87,6 +88,15 @@ function GraphPageContent() {
       setGraph(graphRes);
     });
   }, []);
+
+  // Picks up runs triggered outside this tab (a routine firing in the
+  // background, or a manual run from another window) so the node badge and
+  // the editor sheet's RunOutputPanel reflect it without a page reload.
+  useLiveEvents((event) => {
+    if (event.type !== "run") return;
+    setRunStatus((prev) => ({ ...prev, [event.data.slug]: event.data.status }));
+    setRunOutput((prev) => ({ ...prev, [event.data.slug]: event.data.output }));
+  });
 
   // Open the editor sheet once for a `?agent=slug` deep link (e.g. from the
   // overview page's agent list), without re-triggering on later agent edits.

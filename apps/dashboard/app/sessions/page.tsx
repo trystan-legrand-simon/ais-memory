@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 import { API_BASE } from "@/lib/api-client";
+import { useLiveEvents } from "@/lib/use-live-events";
 import type { RunRecord } from "@/lib/runs";
 
 const STATUS: Record<
@@ -41,6 +42,15 @@ function SessionsPageContent() {
         setLoading(false);
       });
   }, [agentFilter]);
+
+  useLiveEvents((event) => {
+    if (event.type !== "run") return;
+    if (agentFilter && event.data.slug !== agentFilter) return;
+    setRuns((prev) => {
+      if (prev.some((r) => r.id === event.data.id)) return prev;
+      return [event.data, ...prev];
+    });
+  });
 
   return (
     <>

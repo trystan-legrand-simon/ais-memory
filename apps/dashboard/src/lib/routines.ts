@@ -20,7 +20,7 @@ export interface RoutineInput {
   dayOfWeek: number | null;
 }
 
-interface RoutineRow {
+export interface RoutineRow {
   id: number;
   slug: string;
   frequency: string;
@@ -31,7 +31,7 @@ interface RoutineRow {
   created_at: string;
 }
 
-function toRoutine(row: RoutineRow): Routine {
+export function toRoutine(row: RoutineRow): Routine {
   return {
     id: row.id,
     slug: row.slug,

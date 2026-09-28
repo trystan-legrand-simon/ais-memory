@@ -15,6 +15,7 @@ import { PageHeader } from "@/components/page-header";
 import type { Agent } from "@/lib/agents";
 import type { ChatMessage } from "@/lib/chat";
 import { API_BASE } from "@/lib/api-client";
+import { useLiveEvents } from "@/lib/use-live-events";
 
 export default function ChatPage() {
   return (
@@ -60,6 +61,21 @@ function ChatPageContent() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
+
+  // Picks up messages sent from another tab/window for the active agent.
+  // Own-tab sends already append optimistically and via the POST response,
+  // so skip if the incoming event just repeats the last message we have.
+  useLiveEvents((event) => {
+    if (event.type !== "chat_message") return;
+    if (event.data.slug !== selectedSlug) return;
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      if (last && last.role === event.data.role && last.content === event.data.content) {
+        return prev;
+      }
+      return [...prev, { role: event.data.role, content: event.data.content }];
+    });
+  });
 
   const handleSend = useCallback(async () => {
     const message = draft.trim();

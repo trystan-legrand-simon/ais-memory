@@ -1,4 +1,9 @@
-import { invokeClaudeStreaming } from "./claude-cli";
+import {
+  invokeClaudeStreaming,
+  DEFAULT_INVOCATION_TIMEOUT_MS,
+  HUB_INVOCATION_TIMEOUT_MS,
+} from "./claude-cli";
+import { getAgent } from "./agents";
 import { db } from "./db";
 
 export interface ChatMessage {
@@ -67,7 +72,12 @@ export async function sendChatMessage(
     const args = sessionId
       ? ["--resume", sessionId, message]
       : ["--agent", slug, message];
-    const result = await invokeClaudeStreaming(args, onDelta);
+    const agent = await getAgent(slug);
+    const isHub = agent?.tools.some((t) => t.startsWith("Agent(")) ?? false;
+    const timeoutMs = isHub
+      ? HUB_INVOCATION_TIMEOUT_MS
+      : DEFAULT_INVOCATION_TIMEOUT_MS;
+    const result = await invokeClaudeStreaming(args, onDelta, timeoutMs);
 
     if (result.sessionId) {
       setSessionId(slug, result.sessionId);

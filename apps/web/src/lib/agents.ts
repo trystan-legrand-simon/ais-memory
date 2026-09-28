@@ -129,3 +129,58 @@ export async function writeAgent(
 
   return parseAgentFile(slug, output);
 }
+
+export class InvalidSlugError extends Error {}
+export class AgentSlugTakenError extends Error {}
+
+const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+export async function createAgent(
+  slug: string,
+  update: AgentUpdate
+): Promise<Agent> {
+  if (!SLUG_RE.test(slug)) {
+    throw new InvalidSlugError(
+      "Le slug doit être en minuscules, chiffres et tirets uniquement (ex. mon-agent)."
+    );
+  }
+  const slugs = await listAgentSlugs();
+  if (slugs.includes(slug)) {
+    throw new AgentSlugTakenError(`Un agent "${slug}" existe déjà.`);
+  }
+  const output = buildAgentFileContent(slug, update);
+  await fs.writeFile(agentFilePath(slug), output, "utf-8");
+  return parseAgentFile(slug, output);
+}
+
+// Wires a new agent into an existing hub's delegation list — appends
+// `newSlug` inside the hub's `Agent(...)` tool entry (creating one if the
+// hub had none yet, i.e. promoting a plain agent into a hub), without
+// touching the rest of its tools or its prompt.
+export async function addDelegate(
+  hubSlug: string,
+  newSlug: string
+): Promise<Agent> {
+  const hub = await getAgent(hubSlug);
+  if (!hub) {
+    throw new Error(`Unknown agent: ${hubSlug}`);
+  }
+  const delegateIdx = hub.tools.findIndex((t) => t.startsWith("Agent("));
+  const nextTools = [...hub.tools];
+  if (delegateIdx === -1) {
+    nextTools.push(`Agent(${newSlug})`);
+  } else {
+    const inner = hub.tools[delegateIdx].slice("Agent(".length, -1);
+    const names = inner
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!names.includes(newSlug)) names.push(newSlug);
+    nextTools[delegateIdx] = `Agent(${names.join(", ")})`;
+  }
+  return writeAgent(hubSlug, {
+    description: hub.description,
+    tools: nextTools,
+    prompt: hub.prompt,
+  });
+}

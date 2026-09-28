@@ -9,26 +9,42 @@ export interface ClaudeInvocationResult {
   exitCode: number | null;
 }
 
-const INVOCATION_TIMEOUT_MS = 5 * 60 * 1000;
+// A single leaf agent (Read/Grep/Glob/etc., no further delegation) fits
+// comfortably in 5 minutes. A hub agent (declares `Agent(...)` in its own
+// tools, i.e. delegates to others) chains several such invocations
+// sequentially by design — see orchestrateur.md's "ne parallélise jamais" —
+// so it needs a much larger budget. Callers pick which applies via
+// `timeoutMs`; this is just the leaf default.
+export const DEFAULT_INVOCATION_TIMEOUT_MS = 5 * 60 * 1000;
+export const HUB_INVOCATION_TIMEOUT_MS = 20 * 60 * 1000;
 
 // Shared low-level runner for `claude -p ...` headless invocations, used both
 // for one-shot agent runs and for multi-turn chat (via --resume). Permission
 // prompts are bypassed to avoid hanging headless; safe here because every
 // agent this dashboard drives only declares Read/Grep/Glob in its frontmatter,
 // so bypassPermissions doesn't grant any tool the agent doesn't already have.
-export function invokeClaude(args: string[]): Promise<ClaudeInvocationResult> {
+export function invokeClaude(
+  args: string[],
+  timeoutMs: number = DEFAULT_INVOCATION_TIMEOUT_MS
+): Promise<ClaudeInvocationResult> {
   return new Promise((resolve) => {
     const child = spawn(
       "claude",
       ["-p", "--output-format", "json", "--permission-mode", "bypassPermissions", ...args],
-      { cwd: REPO_ROOT }
+      // stdin explicitly closed (not just unfed): left as the default open
+      // pipe, the CLI waits ~3s for piped input that will never come,
+      // prints a "no stdin data received" warning, then proceeds anyway —
+      // harmless but noisy in every run's recorded output for no reason.
+      { cwd: REPO_ROOT, stdio: ["ignore", "pipe", "pipe"] }
     );
 
     let stdout = "";
     let stderr = "";
+    let timedOut = false;
     const timer = setTimeout(() => {
+      timedOut = true;
       child.kill("SIGKILL");
-    }, INVOCATION_TIMEOUT_MS);
+    }, timeoutMs);
 
     child.stdout.on("data", (chunk) => {
       stdout += chunk;
@@ -39,6 +55,16 @@ export function invokeClaude(args: string[]): Promise<ClaudeInvocationResult> {
 
     child.on("close", (exitCode) => {
       clearTimeout(timer);
+      if (timedOut) {
+        resolve({
+          status: "error",
+          output: `Le CLI claude n'a pas terminé dans le délai imparti (${Math.round(timeoutMs / 1000)}s) — processus interrompu.`,
+          raw: stdout,
+          sessionId: null,
+          exitCode,
+        });
+        return;
+      }
       if (exitCode !== 0) {
         resolve({
           status: "error",
@@ -137,7 +163,8 @@ export function parseStreamJsonLine(raw: string): StreamLineEvent | null {
 // docs/superpowers/specs/2026-09-28-chat-streaming-design.md.
 export function invokeClaudeStreaming(
   args: string[],
-  onDelta: (text: string) => void
+  onDelta: (text: string) => void,
+  timeoutMs: number = DEFAULT_INVOCATION_TIMEOUT_MS
 ): Promise<ClaudeInvocationResult> {
   return new Promise((resolve) => {
     const child = spawn(
@@ -152,17 +179,19 @@ export function invokeClaudeStreaming(
         "bypassPermissions",
         ...args,
       ],
-      { cwd: REPO_ROOT }
+      { cwd: REPO_ROOT, stdio: ["ignore", "pipe", "pipe"] }
     );
 
     let stdout = "";
     let stderr = "";
     let lineBuffer = "";
+    let timedOut = false;
     let finalResult: Omit<ClaudeInvocationResult, "exitCode"> | null = null;
 
     const timer = setTimeout(() => {
+      timedOut = true;
       child.kill("SIGKILL");
-    }, INVOCATION_TIMEOUT_MS);
+    }, timeoutMs);
 
     child.stdout.on("data", (chunk: Buffer) => {
       const text = chunk.toString();
@@ -187,6 +216,16 @@ export function invokeClaudeStreaming(
 
     child.on("close", (exitCode) => {
       clearTimeout(timer);
+      if (timedOut) {
+        resolve({
+          status: "error",
+          output: `Le CLI claude n'a pas terminé dans le délai imparti (${Math.round(timeoutMs / 1000)}s) — processus interrompu.`,
+          raw: stdout,
+          sessionId: finalResult?.sessionId ?? null,
+          exitCode,
+        });
+        return;
+      }
       if (exitCode !== 0) {
         resolve({
           status: "error",

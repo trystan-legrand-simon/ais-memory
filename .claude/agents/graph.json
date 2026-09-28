@@ -2,46 +2,50 @@
   "nodes": [
     {
       "id": "orchestrateur",
-      "x": -224.76579288000562,
-      "y": -102.71836884510196
+      "x": 203,
+      "y": 131
     },
     {
       "id": "preparateur-questions-jury",
-      "x": 579.9999999999999,
-      "y": -105
+      "x": -432,
+      "y": 399
     },
     {
       "id": "redacteur-ais",
-      "x": -31.643819421746628,
-      "y": -102.86746769181269
+      "x": -66,
+      "y": -51
     },
     {
       "id": "relecteur-jury",
-      "x": 165,
-      "y": -104
+      "x": 644,
+      "y": -140
     },
     {
       "id": "verificateur-referentiel",
-      "x": 356,
-      "y": -105
+      "x": 587,
+      "y": 277
     }
   ],
   "edges": [
     {
       "from": "orchestrateur",
-      "to": "redacteur-ais"
+      "to": "redacteur-ais",
+      "order": 1
     },
     {
-      "from": "redacteur-ais",
-      "to": "relecteur-jury"
+      "from": "orchestrateur",
+      "to": "relecteur-jury",
+      "order": 2
     },
     {
-      "from": "relecteur-jury",
-      "to": "verificateur-referentiel"
+      "from": "orchestrateur",
+      "to": "verificateur-referentiel",
+      "order": 3
     },
     {
-      "from": "verificateur-referentiel",
-      "to": "preparateur-questions-jury"
+      "from": "orchestrateur",
+      "to": "preparateur-questions-jury",
+      "order": 4
     }
   ]
 }

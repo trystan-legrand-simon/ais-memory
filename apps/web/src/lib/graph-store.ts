@@ -10,6 +10,11 @@ export interface GraphNode {
 export interface GraphEdge {
   from: string;
   to: string;
+  // Execution order among the siblings delegated by the same `from` hub —
+  // orchestrateur.md reads this to know which agent to run first, since a
+  // hub-and-spoke graph (one core fanning out to several agents) has no
+  // inherent linear order the way a chain of from->to links used to.
+  order?: number;
 }
 
 export interface Graph {

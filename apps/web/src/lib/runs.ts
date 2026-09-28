@@ -66,3 +66,20 @@ export function listRunsForAgent(slug: string, limit = 20): RunRecord[] {
     .all(slug, limit) as unknown as RunRow[];
   return rows.map(toRunRecord);
 }
+
+// Returns whether a row actually existed to delete, so the route can 404 on
+// an unknown/already-deleted id instead of silently reporting success.
+export function deleteRun(id: number): boolean {
+  const result = db.prepare("DELETE FROM runs WHERE id = ?").run(id);
+  return Number(result.changes) > 0;
+}
+
+// Clears run history, optionally scoped to one agent — mirrors listRuns()/
+// listRunsForAgent()'s same optional `slug` filter. Returns the number of
+// rows removed, for the confirmation toast.
+export function deleteAllRuns(slug?: string): number {
+  const result = slug
+    ? db.prepare("DELETE FROM runs WHERE slug = ?").run(slug)
+    : db.prepare("DELETE FROM runs").run();
+  return Number(result.changes);
+}

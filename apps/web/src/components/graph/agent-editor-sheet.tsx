@@ -126,7 +126,7 @@ function AgentEditorForm({
           </SheetDescription>
         </div>
         <Link
-          href={`/chat?agent=${agent.slug}`}
+          href={`/dashboard/chat?agent=${agent.slug}`}
           className="mt-0.5 shrink-0 rounded-full border border-border px-2.5 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:text-foreground"
         >
           Discuter →

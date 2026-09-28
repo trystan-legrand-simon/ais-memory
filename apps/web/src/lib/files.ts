@@ -10,7 +10,7 @@ function resolveSafe(relPath: string): string {
     ? MEMOIRE_DIR
     : MEMOIRE_DIR + path.sep;
   if (resolved !== MEMOIRE_DIR && !resolved.startsWith(rootWithSep)) {
-    throw new InvalidPathError(`Path escapes Mémoire AIS/: ${relPath}`);
+    throw new InvalidPathError(`Path escapes ais-memory/: ${relPath}`);
   }
   return resolved;
 }

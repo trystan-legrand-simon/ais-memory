@@ -247,7 +247,7 @@ export default function RoutinesPage() {
                       </div>
                       <div className="flex shrink-0 items-center gap-3">
                         <Link
-                          href={`/sessions?agent=${routine.slug}`}
+                          href={`/dashboard/sessions?agent=${routine.slug}`}
                           className="font-mono text-[11px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                         >
                           Historique

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Syne, JetBrains_Mono } from "next/font/google";
-import { Sidebar } from "@/components/sidebar";
 import "./globals.css";
 
 const syne = Syne({
@@ -25,12 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="fr"
       className={`${syne.variable} ${jetbrainsMono.variable} h-dvh antialiased`}
     >
-      <body className="flex h-dvh">
-        <Sidebar />
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          {children}
-        </div>
-      </body>
+      <body className="flex h-dvh">{children}</body>
     </html>
   );
 }

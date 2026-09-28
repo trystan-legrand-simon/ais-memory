@@ -23,17 +23,17 @@ interface NavItem {
 }
 
 const NAV = [
-  { href: "/", label: "Vue d'ensemble", icon: LayoutDashboard, exact: true },
-  { href: "/graph", label: "Nodes", icon: Waypoints, exact: false },
-  { href: "/chat", label: "Chat", icon: MessageSquare, exact: false },
-  { href: "/sessions", label: "Sessions", icon: History, exact: false },
-  { href: "/dossier", label: "Dossier", icon: FileText, exact: false },
-  { href: "/routines", label: "Routines", icon: Clock, exact: false },
-  { href: "/config", label: "Config", icon: ShieldCheck, exact: false },
+  { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, exact: true },
+  { href: "/dashboard/graph", label: "Nodes", icon: Waypoints, exact: false },
+  { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
+  { href: "/dashboard/sessions", label: "Sessions", icon: History, exact: false },
+  { href: "/dashboard/dossier", label: "Dossier", icon: FileText, exact: false },
+  { href: "/dashboard/routines", label: "Routines", icon: Clock, exact: false },
+  { href: "/dashboard/config", label: "Config", icon: ShieldCheck, exact: false },
 ];
 
 const NAV_BOTTOM = [
-  { href: "/settings", label: "Settings", icon: Settings, exact: false },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },
 ];
 
 export function Sidebar() {
@@ -42,7 +42,7 @@ export function Sidebar() {
   return (
     <aside className="flex h-dvh w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
       <Link
-        href="/"
+        href="/dashboard"
         className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4"
       >
         <span className="grid size-6 place-items-center rounded-md bg-sidebar-foreground text-[11px] font-heading font-extrabold text-sidebar">

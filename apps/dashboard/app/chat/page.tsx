@@ -33,6 +33,7 @@ function ChatPageContent() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
   const [loadingHistory, setLoadingHistory] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +83,7 @@ function ChatPageContent() {
     if (!message || !selectedSlug || sending) return;
     setDraft("");
     setSending(true);
+    setStreamingText("");
     setMessages((prev) => [...prev, { role: "user", content: message }]);
     try {
       const res = await fetch(`${API_BASE}/agents/${selectedSlug}/chat`, {
@@ -89,16 +91,48 @@ function ChatPageContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
-      const data = await res.json();
+
       if (!res.ok) {
+        const data = await res.json();
         setMessages((prev) => [
           ...prev,
           { role: "error", content: data.error ?? "Erreur" },
         ]);
         return;
       }
-      setMessages(data.messages);
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("Réponse sans corps streamable");
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const frame = JSON.parse(line) as
+            | { type: "delta"; text: string }
+            | { type: "done" }
+            | { type: "error"; message: string };
+          if (frame.type === "delta") {
+            accumulated += frame.text;
+            setStreamingText(accumulated);
+          } else if (frame.type === "done") {
+            setMessages((prev) => [...prev, { role: "agent", content: accumulated }]);
+            setStreamingText("");
+          } else if (frame.type === "error") {
+            setMessages((prev) => [...prev, { role: "error", content: frame.message }]);
+            setStreamingText("");
+          }
+        }
+      }
     } catch (err) {
+      setStreamingText("");
       setMessages((prev) => [
         ...prev,
         {
@@ -158,7 +192,10 @@ function ChatPageContent() {
             ) : (
               messages.map((m, i) => <ChatBubble key={i} message={m} />)
             )}
-            {sending && (
+            {sending && streamingText && (
+              <ChatBubble message={{ role: "agent", content: streamingText }} />
+            )}
+            {sending && !streamingText && (
               <div className="flex items-center gap-1.5 self-start rounded-lg border border-border bg-card px-3 py-2 font-mono text-[12px] text-muted-foreground">
                 <span className="size-1.5 animate-pulse rounded-full bg-warning" />
                 {selectedAgent?.name} réfléchit…

@@ -3,6 +3,7 @@ import { getAgent } from "@/lib/agents";
 import {
   ChatAlreadyBusyError,
   getChatHistory,
+  isChatBusy,
   resetChat,
   sendChatMessage,
 } from "@/lib/chat";
@@ -37,21 +38,60 @@ export async function POST(
     );
   }
 
-  try {
-    const messages = await sendChatMessage(slug, body.message);
-    return NextResponse.json({ messages });
-  } catch (err) {
-    if (err instanceof ChatAlreadyBusyError) {
-      return NextResponse.json(
-        { error: "Une réponse est déjà en cours pour cet agent" },
-        { status: 409 }
-      );
-    }
+  // Checked before opening the stream so a busy agent gets a plain JSON 409
+  // instead of a ReadableStream response that would immediately need
+  // tearing down. sendChatMessage() re-checks this same guard right before
+  // insert, closing the race between this check and the stream start.
+  if (isChatBusy(slug)) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Erreur inconnue" },
-      { status: 500 }
+      { error: "Une réponse est déjà en cours pour cet agent" },
+      { status: 409 }
     );
   }
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      // Never lets a broken pipe (client gone) stop the underlying CLI
+      // invocation — see docs/superpowers/specs/2026-09-28-chat-streaming-design.md.
+      function safeEnqueue(frame: object) {
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(frame) + "\n"));
+        } catch {
+          // Stream already closed client-side — ignore, keep running.
+        }
+      }
+      function safeClose() {
+        try {
+          controller.close();
+        } catch {
+          // Already closed — ignore.
+        }
+      }
+
+      sendChatMessage(slug, body.message, (text) => {
+        safeEnqueue({ type: "delta", text });
+      })
+        .then(() => {
+          safeEnqueue({ type: "done" });
+          safeClose();
+        })
+        .catch((err) => {
+          const message =
+            err instanceof ChatAlreadyBusyError
+              ? "Une réponse est déjà en cours pour cet agent"
+              : err instanceof Error
+                ? err.message
+                : "Erreur inconnue";
+          safeEnqueue({ type: "error", message });
+          safeClose();
+        });
+    },
+  });
+
+  return new Response(stream, {
+    headers: { "Content-Type": "application/x-ndjson; charset=utf-8" },
+  });
 }
 
 export async function DELETE(

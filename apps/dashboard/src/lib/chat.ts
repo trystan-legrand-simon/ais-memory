@@ -1,4 +1,4 @@
-import { invokeClaude } from "./claude-cli";
+import { invokeClaudeStreaming } from "./claude-cli";
 import { db } from "./db";
 
 export interface ChatMessage {
@@ -53,7 +53,8 @@ export function getChatHistory(slug: string): ChatMessage[] {
 
 export async function sendChatMessage(
   slug: string,
-  message: string
+  message: string,
+  onDelta: (text: string) => void
 ): Promise<ChatMessage[]> {
   if (busyAgents.has(slug)) {
     throw new ChatAlreadyBusyError(`Chat already in progress for: ${slug}`);
@@ -66,7 +67,7 @@ export async function sendChatMessage(
     const args = sessionId
       ? ["--resume", sessionId, message]
       : ["--agent", slug, message];
-    const result = await invokeClaude(args);
+    const result = await invokeClaudeStreaming(args, onDelta);
 
     if (result.sessionId) {
       setSessionId(slug, result.sessionId);

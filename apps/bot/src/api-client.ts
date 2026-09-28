@@ -8,12 +8,12 @@ export interface Mission {
   createdAt: string;
   messageCount: number;
   busy: boolean;
-}
+};
 
 export interface MissionMessage {
   role: "user" | "agent" | "error";
   content: string;
-}
+};
 
 export type ApiResult<T> =
   | { ok: true; data: T }
@@ -25,7 +25,7 @@ async function parseJson(res: Response): Promise<unknown> {
   } catch {
     return null;
   }
-}
+};
 
 export async function getMissionByChannel(
   channelId: string
@@ -42,7 +42,7 @@ export async function getMissionByChannel(
     };
   }
   return { ok: true, data: body as unknown as Mission };
-}
+};
 
 export async function createMission(input: {
   agentSlug: string;
@@ -63,7 +63,7 @@ export async function createMission(input: {
     };
   }
   return { ok: true, data: body as unknown as Mission };
-}
+};
 
 export async function sendMissionMessage(
   missionId: number,
@@ -83,4 +83,4 @@ export async function sendMissionMessage(
     };
   }
   return { ok: true, data: body?.reply as MissionMessage };
-}
+};

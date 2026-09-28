@@ -4,7 +4,7 @@ function requireEnv(name: string): string {
     throw new Error(`Variable d'environnement manquante: ${name}`);
   }
   return value;
-}
+};
 
 export const DISCORD_BOT_TOKEN = requireEnv("DISCORD_BOT_TOKEN");
 export const DISCORD_APPLICATION_ID = requireEnv("DISCORD_APPLICATION_ID");

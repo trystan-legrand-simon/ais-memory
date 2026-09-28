@@ -56,6 +56,13 @@ export function getMission(id: number): Mission | null {
   return row ? toMission(row) : null;
 }
 
+export function listMissions(): Mission[] {
+  const rows = db
+    .prepare("SELECT * FROM missions ORDER BY created_at DESC")
+    .all() as unknown as MissionRow[];
+  return rows.map(toMission);
+}
+
 export function createMission(input: {
   agentSlug: string;
   discordChannelId: string;

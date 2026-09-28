@@ -5,15 +5,19 @@ import {
   createMission,
   getMissionByChannelId,
   isMissionBusy,
+  listMissions,
 } from "@/lib/missions";
 
 export async function GET(req: NextRequest) {
   const channelId = req.nextUrl.searchParams.get("channelId");
+
   if (!channelId) {
-    return NextResponse.json(
-      { error: "Paramètre manquant: channelId" },
-      { status: 400 }
-    );
+    const missions = listMissions().map((mission) => ({
+      ...mission,
+      messageCount: countMissionMessages(mission.id),
+      busy: isMissionBusy(mission.id),
+    }));
+    return NextResponse.json(missions);
   }
 
   const mission = getMissionByChannelId(channelId);

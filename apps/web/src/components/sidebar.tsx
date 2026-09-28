@@ -11,6 +11,7 @@ import {
   Settings,
   ShieldCheck,
   Clock,
+  Radar,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ const NAV = [
   { href: "/dashboard/sessions", label: "Sessions", icon: History, exact: false },
   { href: "/dashboard/dossier", label: "Dossier", icon: FileText, exact: false },
   { href: "/dashboard/routines", label: "Routines", icon: Clock, exact: false },
+  { href: "/dashboard/missions", label: "Missions", icon: Radar, exact: false },
   { href: "/dashboard/config", label: "Config", icon: ShieldCheck, exact: false },
 ];
 

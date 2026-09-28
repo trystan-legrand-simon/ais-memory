@@ -1,0 +1,47 @@
+{
+  "nodes": [
+    {
+      "id": "orchestrateur",
+      "x": -77,
+      "y": -69
+    },
+    {
+      "id": "preparateur-questions-jury",
+      "x": 820,
+      "y": 0
+    },
+    {
+      "id": "redacteur-ais",
+      "x": 163,
+      "y": -145
+    },
+    {
+      "id": "relecteur-jury",
+      "x": -3,
+      "y": 84
+    },
+    {
+      "id": "verificateur-referentiel",
+      "x": 224,
+      "y": 163
+    }
+  ],
+  "edges": [
+    {
+      "from": "orchestrateur",
+      "to": "redacteur-ais"
+    },
+    {
+      "from": "redacteur-ais",
+      "to": "relecteur-jury"
+    },
+    {
+      "from": "relecteur-jury",
+      "to": "verificateur-referentiel"
+    },
+    {
+      "from": "verificateur-referentiel",
+      "to": "preparateur-questions-jury"
+    }
+  ]
+}

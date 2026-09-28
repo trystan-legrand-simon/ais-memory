@@ -1,0 +1,5 @@
+Ancien chauffeur Poids Lourd et Super Poids Lourd, passionné par le monde informatique et la tech, je me suis formé de manière autodidacte dans plusieurs disciplines techniques tels que le développement web, l’administration systèmes et réseaux puis la cyber sécurité.
+
+Je suis actuellement en alternance chez Thales, sur le site de Gémenos, où j'occupe un poste d’apprenti en administration systèmes, sûreté, sécurité et cyber sécurité. J’y interviens notamment sur la gestion et la supervision du contrôle d’accès et d’intrusion, ce qui constitue le périmètre principal des missions présentées dans ce dossier.
+
+A la suite de cette alternance, j’aimerais poursuivre mes études dans le domaine plus approfondi dans la cyber sécurité comme le Pentesting, le Red Teaming et l’AI Red Teaming. Pour cela j’ai effectué les démarches d’inscription au Master 1 - Expert en CyberSécurité Pentester, un Titre Professionnel de niveau 7 auprès de Ynov Campus / Connect (*RCNP37832*). Et j’espère poursuivre mon alternance chez Thales.

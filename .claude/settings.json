@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "language": "french",
+  "model": "claude-sonnet-5",
+  "modelSettings": {
+    "claude-sonnet-5": {
+      "effortLevel": "medium"
+    }
+  },
+  "editorMode": "normal",
+  "teammateMode": "auto",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude Code needs your attention\" with title \"Claude Code\"'"
+          }
+        ]
+      }
+    ]
+  },
+  "worktree": {
+    "sparsePaths": [
+      ".claude",
+      ".github/workflows",
+      "apps/web",
+      "apps/dashboard"
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit(./**)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(grep *)",
+      "Bash(wc *)",
+      "Bash(tree *)",
+      "Bash(pandoc *)",
+      "WebFetch(domain:www.francecompetences.fr)",
+      "WebFetch(domain:travail-emploi.gouv.fr)"
+    ],
+    "deny": [
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(./**/id_rsa*)",
+      "Read(./**/id_ed25519*)",
+      "Read(./**/*.kdbx)",
+      "Bash(cat *.env*)",
+      "Bash(cat *.pem)",
+      "Bash(cat *.key)",
+      "Bash(cat *id_rsa*)",
+      "Bash(cat *id_ed25519*)",
+      "Bash(cat *.kdbx)",
+      "Bash(head *.env*)",
+      "Bash(head *.pem)",
+      "Bash(head *.key)",
+      "Bash(head *id_rsa*)",
+      "Bash(head *id_ed25519*)",
+      "Bash(tail *.env*)",
+      "Bash(tail *.pem)",
+      "Bash(tail *.key)",
+      "Bash(tail *id_rsa*)",
+      "Bash(tail *id_ed25519*)",
+      "Bash(grep * *.env*)",
+      "Bash(grep * *.pem)",
+      "Bash(grep * *.key)",
+      "Bash(grep * *id_rsa*)",
+      "Bash(grep * *id_ed25519*)",
+      "Bash(grep * *.kdbx)"
+    ]
+  },
+  "autoUpdatesChannel": "stable",
+  "cleanupPeriodDays": 20
+}

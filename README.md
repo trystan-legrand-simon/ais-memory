@@ -1,6 +1,6 @@
 # AIS Memory
 
-Ce dépôt regroupe deux chantiers indépendants menés en parallèle.
+Ce dépôt regroupe plusieurs chantiers indépendants menés en parallèle.
 
 ## Dossier de projet TP AIS
 
@@ -8,8 +8,10 @@ Espace de travail pour le **TP Administrateur d'Infrastructures Sécurisées**
 (AIS, RNCP37680, niveau 6) : rédaction du dossier de projet et du support de
 soutenance.
 
-- `Mémoire AIS/main.md` — dossier de projet
-- `Mémoire AIS/Présentation/` — support de soutenance (40 min)
+- `ais-memory/main.md` — dossier de projet
+- `ais-memory/[01]_Présentation/` — présentation du candidat, de l'entreprise,
+  organigramme, parc informatique
+- `ais-memory/[02]_Missions/` — brouillons des missions 1 à 3
 - `.claude/skills/dossier-projet-ais/` — skill de rédaction/relecture/vérification
   de couverture par rapport au référentiel RNCP37680
 
@@ -32,3 +34,16 @@ pnpm dev
 Stack : Next.js (App Router) + shadcn/ui + React Flow, SQLite (`node:sqlite`)
 pour l'historique de chat/runs/routines. Design docs des fonctionnalités dans
 `docs/superpowers/specs/`.
+
+## Socle Agentic OS (`packages/`)
+
+Squelette du futur socle partagé de l'Agentic OS, indépendant du dashboard :
+
+- `packages/core` — types et logique cœur
+- `packages/runtime` — adaptateurs d'exécution (`claude`, `codex`, `ollama`)
+- `packages/shared` — utilitaires partagés
+- `packages/storage` — persistance
+- `scripts/` — `dev.ts`, `build.ts`, `migrate.ts`
+- `tests/integration`, `tests/e2e`
+
+En construction — pas encore de code dedans.

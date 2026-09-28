@@ -1,4 +1,4 @@
-APP := dashboard
+APP := web
 
 .PHONY: install dev build start lint test typecheck clean
 
